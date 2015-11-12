@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.udacity.gradle.jokedisplay.JokeActivity;
 import com.udacity.gradle.jokes.Joker;
 
 
@@ -43,7 +44,12 @@ public class MainActivity extends ActionBarActivity {
 
     public void tellJoke(View view){
         Joker myJoker = new Joker();
-        Toast.makeText(this, myJoker.getJoke(), Toast.LENGTH_SHORT).show();
+
+        //Step 1
+        //Toast.makeText(this, myJoker.getJoke(), Toast.LENGTH_SHORT).show();
+
+        //Step 2
+        JokeActivity.startActivity(this, myJoker.getJoke());
     }
 
 
