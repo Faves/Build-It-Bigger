@@ -1,24 +1,44 @@
 package com.udacity.gradle.builditbigger;
 
-import android.support.v7.app.ActionBarActivity;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
+import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
+import com.udacity.gradle.jockebackend.myApi.MyApi;
 import com.udacity.gradle.jokedisplay.JokeActivity;
-import com.udacity.gradle.jokes.Joker;
+
+import java.io.IOException;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
+    private MyApi myApiService;
+    private EndpointsAsyncTask mEndpointsAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //init
+        myApiService = null;
+        mEndpointsAsyncTask = null;
     }
 
+    @Override
+    protected void onDestroy() {
+        if (mEndpointsAsyncTask != null) {
+            mEndpointsAsyncTask.cancel(true);
+        }
+
+        super.onDestroy();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -43,14 +63,62 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void tellJoke(View view){
-        Joker myJoker = new Joker();
-
         //Step 1
+        //Joker myJoker = new Joker();
         //Toast.makeText(this, myJoker.getJoke(), Toast.LENGTH_SHORT).show();
 
         //Step 2
-        JokeActivity.startActivity(this, myJoker.getJoke());
+        //Joker myJoker = new Joker();
+        //JokeActivity.startActivity(this, myJoker.getJoke());
+
+        //Step 3
+        doEndpointsTask();
     }
 
+    private void doEndpointsTask() {
+        if (mEndpointsAsyncTask == null) {
+            mEndpointsAsyncTask = new EndpointsAsyncTask();
+            mEndpointsAsyncTask.execute();
+        }
+    }
+    private class EndpointsAsyncTask extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... params) {
+            if(myApiService == null) {  // Only do this once
+                MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
+                        new AndroidJsonFactory(), null)
+                        // options for running against local devappserver
+                        // - 10.0.2.2 is localhost's IP address in Android emulator
+                        // - turn off compression when running against local devappserver
+                        .setRootUrl("http://10.0.2.2:8080/_ah/api/")
+                        .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
+                            @Override
+                            public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest) throws IOException {
+                                abstractGoogleClientRequest.setDisableGZipContent(true);
+                            }
+                        });
+                // end options for devappserver
 
+                myApiService = builder.build();
+            }
+
+            try {
+                return myApiService.tellMeAJoke().execute().getData();
+            } catch (IOException e) {
+                return e.getMessage();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mEndpointsAsyncTask = null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mEndpointsAsyncTask = null;
+
+            JokeActivity.startActivity(MainActivity.this, result);
+        }
+    }
 }
