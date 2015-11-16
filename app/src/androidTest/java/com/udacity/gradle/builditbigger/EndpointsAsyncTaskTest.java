@@ -5,8 +5,6 @@ import android.util.Log;
 
 import com.udacity.gradle.jokes.Joker;
 
-import org.junit.Test;
-
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
