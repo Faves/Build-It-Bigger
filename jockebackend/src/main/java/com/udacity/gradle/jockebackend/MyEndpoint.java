@@ -11,8 +11,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.udacity.gradle.jokes.Joker;
 
-import javax.inject.Named;
-
 /**
  * An endpoint class we are exposing
  */
