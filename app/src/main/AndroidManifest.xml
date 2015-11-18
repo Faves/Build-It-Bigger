@@ -23,6 +23,14 @@
             </intent-filter>
         </activity>
 
+        <!-- redefine JokeActivity here to define activity hierarchy -->
+        <activity android:name="com.udacity.gradle.jokedisplay.JokeActivity"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.udacity.gradle.builditbigger.MainActivity" />
+        </activity>
+
     </application>
 
 </manifest>
