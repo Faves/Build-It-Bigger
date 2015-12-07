@@ -1,6 +1,7 @@
 package com.udacity.gradle.builditbigger;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +12,7 @@ import com.udacity.gradle.jokedisplay.JokeActivity;
 
 public class MainActivity extends AppCompatActivity {
     private EndpointsAsyncTask mEndpointsAsyncTask;
+    private IMainActivityLoadable mMainFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,10 +21,20 @@ public class MainActivity extends AppCompatActivity {
 
         //init
         mEndpointsAsyncTask = null;
+
+        //view
+        Fragment tmpFragment = getSupportFragmentManager().findFragmentById(R.id.fragment);
+        if (tmpFragment != null && (tmpFragment instanceof IMainActivityLoadable)) {
+            mMainFragment = (IMainActivityLoadable)tmpFragment;
+        }
+        else {
+            mMainFragment = null;
+        }
     }
 
     @Override
     protected void onDestroy() {
+        //stop if task is running
         if (mEndpointsAsyncTask != null) {
             mEndpointsAsyncTask.cancel(true);
         }
@@ -67,13 +79,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void doEndpointsTask() {
         if (mEndpointsAsyncTask == null) {
+            if (mMainFragment != null) mMainFragment.startLoading();
+
             mEndpointsAsyncTask = new EndpointsAsyncTask();
             mEndpointsAsyncTask.execute(new EndpointsAsyncTask.IEndpointsCallback() {
                 @Override
                 public void onEndTask_Endpoints(String result) {
                     mEndpointsAsyncTask = null;
+                    if (mMainFragment != null) mMainFragment.stopLoading();
 
-                    JokeActivity.startActivity(MainActivity.this, result);
+                    //if not cancelled
+                    if (result != null) {
+                        JokeActivity.startActivity(MainActivity.this, result);
+                    }
                 }
             });
         }
