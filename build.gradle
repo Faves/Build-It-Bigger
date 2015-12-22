@@ -17,3 +17,20 @@ allprojects {
         jcenter()
     }
 }
+
+
+
+task _runAppEngine(dependsOn: ':jockebackend:appengineRun') << {
+    println '> run AppEngine'
+}
+task _stopAppEngine(dependsOn: ':jockebackend:appengineStop') << {
+    println '> stop AppEngine'
+}
+task _runTests(dependsOn: [":jokedisplay:test",":app:connectedAndroidTest"]) << {
+    println '> run tests'
+}
+
+task testAllTheProject << {
+    println 'test all the project'
+}
+testAllTheProject.dependsOn = [_runAppEngine, _runTests, _stopAppEngine]
